@@ -1,7 +1,9 @@
 #include <ESP8266WiFi.h>
+#include <SPI.h>
 
 #include "constants.h"
 #include "config.h"
+#include "config_defaults.h"
 #include "radio.h"
 #include "lightbar.h"
 #include "mqtt.h"
@@ -16,8 +18,8 @@ void setupWifi()
   Serial.print(WIFI_SSID);
   Serial.print("\"...");
 
+  WiFi.hostname(mqtt.getClientId());
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  WiFi.setHostname(mqtt.getClientId().c_str());
 
   uint retries = 0;
   while (WiFi.status() != WL_CONNECTED)
@@ -34,7 +36,6 @@ void setupWifi()
   Serial.print("[WiFi] IP address: ");
   Serial.println(WiFi.localIP());
 }
-
 void setup()
 {
   Serial.begin(115200);
@@ -42,6 +43,9 @@ void setup()
   Serial.println("# LIGHTBAR2MQTT            (Version " + constants::VERSION + ") #");
   Serial.println("# https://github.com/ebinf/lightbar2mqtt #");
   Serial.println("##########################################");
+
+  // ESP8266 hardware SPI pins are fixed: SCK=GPIO14 (D5), MISO=GPIO12 (D6), MOSI=GPIO13 (D7)
+  SPI.begin();
 
   radio.setup();
 
